@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradingView Watchlist</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .watchlist {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .watchlist-header {
+            padding: 20px;
+            background: #2962ff;
+            color: white;
+        }
+        .watchlist-items {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+        .watchlist-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .watchlist-item:hover {
+            background-color: #f8f9fa;
+        }
+        .watchlist-item:last-child {
+            border-bottom: none;
+        }
+        .symbol {
+            font-weight: 600;
+            color: #333;
+        }
+        .name {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .price {
+            font-weight: 500;
+            color: #333;
+        }
+        .change {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .positive {
+            color: #00c853;
+            background: #e8f5e9;
+        }
+        .negative {
+            color: #ff1744;
+            background: #ffebee;
+        }
+        .status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 4px;
+            background: #f0f0f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 14px;
+            display: none;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #00c853;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #ff1744;
+        }
+    </style>
+</head>
+<body>
+    <div class="watchlist">
+        <div class="watchlist-header">
+            <h1>Watchlist</h1>
+        </div>
+        <ul class="watchlist-items">
+            <li class="watchlist-item" data-symbol="NASDAQ:AAPL">
+                <div>
+                    <div class="symbol">AAPL</div>
+                    <div class="name">Apple Inc.</div>
+                </div>
+                <div>
+                    <div class="price">$173.57</div>
+                    <div class="change positive">+2.34%</div>
+                </div>
+            </li>
+            <li class="watchlist-item" data-symbol="NASDAQ:TSLA">
+                <div>
+                    <div class="symbol">TSLA</div>
+                    <div class="name">Tesla, Inc.</div>
+                </div>
+                <div>
+                    <div class="price">$147.05</div>
+                    <div class="change negative">-1.23%</div>
+                </div>
+            </li>
+            <li class="watchlist-item" data-symbol="NASDAQ:GOOGL">
+                <div>
+                    <div class="symbol">GOOGL</div>
+                    <div class="name">Alphabet Inc.</div>
+                </div>
+                <div>
+                    <div class="price">$156.28</div>
+                    <div class="change positive">+0.87%</div>
+                </div>
+            </li>
+            <li class="watchlist-item" data-symbol="NASDAQ:AMZN">
+                <div>
+                    <div class="symbol">AMZN</div>
+                    <div class="name">Amazon.com Inc.</div>
+                </div>
+                <div>
+                    <div class="price">$178.75</div>
+                    <div class="change positive">+1.45%</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div id="status" class="status"></div>
+
+    <script>
+        console.log('[Watchlist] Starting up on:', window.location.href);
+        
+        // Function to show status messages
+        function showStatus(message, isError = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + (isError ? 'error' : 'success');
+            statusEl.style.display = 'block';
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Open or get reference to TradingView window
+        let tvWindow = null;
+        
+        function openTradingView() {
+            if (!tvWindow || tvWindow.closed) {
+                tvWindow = window.open('https://www.tradingview.com/chart/', 'tvChartWindow');
+                console.log('[Watchlist] Opened TradingView window');
+            }
+            return tvWindow;
+        }
+        
+        // Function to send a symbol to TradingView
+        function sendSymbol(symbol) {
+            console.log('[Watchlist] Sending symbol:', symbol);
+            
+            // Make sure we have a reference to the TradingView window
+            const tvWin = openTradingView();
+            if (!tvWin) {
+                showStatus('Could not open TradingView window', true);
+                return;
+            }
+            
+            // Send the message to TradingView
+            try {
+                tvWin.postMessage({ symbol: symbol }, 'https://www.tradingview.com');
+                console.log('[Watchlist] Sent postMessage to TradingView:', symbol);
+                showStatus(`Symbol ${symbol} sent to TradingView`);
+            } catch (err) {
+                console.error('[Watchlist] Error sending message:', err);
+                showStatus(`Error sending symbol: ${err.message}`, true);
+            }
+        }
+        
+        // Set up click handlers for each watchlist item
+        document.querySelectorAll('.watchlist-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const symbol = item.dataset.symbol;
+                console.log('[Watchlist] Clicked:', symbol);
+                sendSymbol(symbol);
+            });
+        });
+
+        console.log('[Watchlist] Setup complete');
+    </script>
+</body>
+</html> 
