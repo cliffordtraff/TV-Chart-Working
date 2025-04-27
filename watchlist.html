@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradingView Watchlist</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .watchlist {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .watchlist-header {
+            padding: 20px;
+            background: #2962ff;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .watchlist-header h1 {
+            margin: 0;
+        }
+        .refresh-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        .refresh-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .watchlist-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .watchlist-table th {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #eee;
+        }
+        .watchlist-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eee;
+        }
+        .watchlist-table tr:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+        .symbol {
+            font-weight: 600;
+            color: #333;
+        }
+        .price {
+            font-weight: 500;
+            color: #333;
+        }
+        .change {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            text-align: right;
+        }
+        .positive {
+            color: #00c853;
+            background: #e8f5e9;
+        }
+        .negative {
+            color: #ff1744;
+            background: #ffebee;
+        }
+        .volume {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .sector {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .ex-date {
+            white-space: nowrap;
+            color: #666;
+            font-size: 0.9em;
+            padding-left: 2px;
+            padding-right: 2px;
+            text-align: left;
+            box-sizing: border-box;
+            width: 1%;
+            max-width: 1%;
+        }
+        .watchlist-table th.ex-date,
+        .watchlist-table td.ex-date {
+            padding-left: 2px;
+            padding-right: 2px;
+            text-align: left;
+            width: 1%;
+        }
+        .status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 4px;
+            background: #f0f0f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 14px;
+            display: none;
+            z-index: 1000;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #00c853;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #ff1744;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .error-message {
+            color: #ff1744;
+            font-size: 0.9em;
+            margin-top: 4px;
+        }
+        .api-key-form {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .api-key-form input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+            margin-right: 10px;
+        }
+        .api-key-form button {
+            padding: 8px 16px;
+            background: #2962ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .api-key-form button:hover {
+            background: #1e4bd8;
+        }
+    </style>
+</head>
+<body>
+    <div class="watchlist">
+        <div class="watchlist-header">
+            <h1>Watchlist</h1>
+            <button id="refreshButton" class="refresh-button">Refresh Data</button>
+        </div>
+        
+        <div id="apiKeyForm" class="api-key-form">
+            <h3>Alpha Vantage API Key</h3>
+            <p>Enter your Alpha Vantage API key to fetch real-time data:</p>
+            <input type="text" id="apiKeyInput" placeholder="Enter your API key">
+            <button id="saveApiKeyButton">Save API Key</button>
+        </div>
+        
+        <div id="watchlistContainer">
+            <table class="watchlist-table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Price</th>
+                        <th>Bid</th>
+                        <th>Ask</th>
+                        <th>Change</th>
+                        <th>52W High</th>
+                        <th>52W Low</th>
+                        <th>Market Cap</th>
+                        <th>P/E Ratio</th>
+                        <th class="ex-date">Ex Div Date</th>
+                        <th>Volume</th>
+                        <th>Sector</th>
+                    </tr>
+                </thead>
+                <tbody id="watchlistBody">
+                    <tr>
+                        <td colspan="12" class="loading">Loading watchlist data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="status" class="status"></div>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="alphaVantageService.js"></script>
+    <script src="symbolService.js"></script>
+    <script>
+        console.log('[Watchlist] Starting up on:', window.location.href);
+        
+        // Initialize services
+        const symbolService = new SymbolService();
+        
+        let tvWindow = null;
+        let pendingSymbol = null;
+
+        // Function to send a symbol to TradingView
+        function sendSymbol(symbol) {
+            console.log('[Watchlist] Processing symbol:', symbol);
+            
+            if (!tvWindow) {
+                console.log('[Watchlist] Opening TradingView window');
+                tvWindow = window.open('https://www.tradingview.com/chart/', '_blank');
+                pendingSymbol = symbol;
+                return;
+            }
+
+            if (tvWindow.closed) {
+                console.log('[Watchlist] TradingView window was closed, reopening');
+                tvWindow = window.open('https://www.tradingview.com/chart/', '_blank');
+                pendingSymbol = symbol;
+                return;
+            }
+
+            // If we have a pending symbol, update it
+            if (pendingSymbol) {
+                pendingSymbol = symbol;
+                return;
+            }
+
+            // Send the symbol to TradingView
+            console.log('[Watchlist] Sending symbol to TradingView:', symbol);
+            tvWindow.postMessage({ 
+                symbol: symbol 
+            }, '*');
+        }
+        
+        // Function to show status messages
+        function showStatus(message, isError = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + (isError ? 'error' : 'success');
+            statusEl.style.display = 'block';
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Function to format numbers
+        function formatNumber(num, decimals = 2) {
+            if (num === null || isNaN(num)) return 'N/A';
+            return num.toLocaleString(undefined, {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+        }
+        
+        // Function to format large numbers (like volume)
+        function formatLargeNumber(num) {
+            if (num === null || isNaN(num)) return 'N/A';
+            
+            if (num >= 1e12) {
+                return (num / 1e12).toFixed(2) + 'T';
+            } else if (num >= 1e9) {
+                return (num / 1e9).toFixed(2) + 'B';
+            } else if (num >= 1e6) {
+                return (num / 1e6).toFixed(2) + 'M';
+            } else if (num >= 1e3) {
+                return (num / 1e3).toFixed(2) + 'K';
+            } else {
+                return num.toLocaleString();
+            }
+        }
+        
+        // Function to create a watchlist row
+        function createWatchlistRow(symbol, price, change, changePercent, volume, sector, bid, ask, weekHigh52, weekLow52, marketCap, peRatio, exDividendDate) {
+            const row = document.createElement('tr');
+            row.dataset.symbol = symbol;
+            
+            // Symbol cell
+            const symbolCell = document.createElement('td');
+            symbolCell.className = 'symbol';
+            symbolCell.textContent = symbol.includes(':') ? symbol.split(':')[1] : symbol;
+            row.appendChild(symbolCell);
+            
+            // Price cell
+            const priceCell = document.createElement('td');
+            priceCell.className = 'price';
+            priceCell.textContent = price ? `$${formatNumber(price)}` : 'Loading...';
+            row.appendChild(priceCell);
+            
+            // Bid cell
+            const bidCell = document.createElement('td');
+            bidCell.className = 'price';
+            bidCell.textContent = bid ? `$${formatNumber(bid)}` : 'Loading...';
+            row.appendChild(bidCell);
+            
+            // Ask cell
+            const askCell = document.createElement('td');
+            askCell.className = 'price';
+            askCell.textContent = ask ? `$${formatNumber(ask)}` : 'Loading...';
+            row.appendChild(askCell);
+            
+            // Change cell
+            const changeCell = document.createElement('td');
+            changeCell.className = change >= 0 ? 'change positive' : 'change negative';
+            const changeText = change ? 
+                `${change >= 0 ? '+' : ''}${formatNumber(change)} (${changePercent >= 0 ? '+' : ''}${formatNumber(changePercent)}%)` : 
+                'Loading...';
+            changeCell.textContent = changeText;
+            row.appendChild(changeCell);
+            
+            // 52-week high cell
+            const high52Cell = document.createElement('td');
+            high52Cell.className = 'price';
+            high52Cell.textContent = weekHigh52 ? `$${formatNumber(weekHigh52)}` : 'Loading...';
+            row.appendChild(high52Cell);
+            
+            // 52-week low cell
+            const low52Cell = document.createElement('td');
+            low52Cell.className = 'price';
+            low52Cell.textContent = weekLow52 ? `$${formatNumber(weekLow52)}` : 'Loading...';
+            row.appendChild(low52Cell);
+            
+            // Market cap cell
+            const marketCapCell = document.createElement('td');
+            marketCapCell.className = 'volume';
+            marketCapCell.textContent = marketCap ? formatLargeNumber(marketCap) : 'Loading...';
+            row.appendChild(marketCapCell);
+            
+            // P/E ratio cell
+            const peRatioCell = document.createElement('td');
+            peRatioCell.className = 'price';
+            peRatioCell.textContent = peRatio ? formatNumber(peRatio) : 'Loading...';
+            row.appendChild(peRatioCell);
+            
+            // Ex Dividend date cell
+            const exDivDateCell = document.createElement('td');
+            exDivDateCell.className = 'ex-date';
+            exDivDateCell.textContent = exDividendDate || 'Loading...';
+            row.appendChild(exDivDateCell);
+            
+            // Volume cell
+            const volumeCell = document.createElement('td');
+            volumeCell.className = 'volume';
+            volumeCell.textContent = volume ? formatLargeNumber(volume) : 'Loading...';
+            row.appendChild(volumeCell);
+            
+            // Sector cell
+            const sectorCell = document.createElement('td');
+            sectorCell.className = 'sector';
+            sectorCell.textContent = sector || 'Loading...';
+            row.appendChild(sectorCell);
+            
+            // Add click event to open TradingView
+            row.addEventListener('click', () => {
+                // Extract the base symbol without exchange prefix
+                const baseSymbol = symbol.includes(':') ? symbol.split(':')[1] : symbol;
+                sendSymbol(baseSymbol);
+            });
+            
+            return row;
+        }
+        
+        // Function to update the watchlist
+        async function updateWatchlist() {
+            const watchlistBody = document.getElementById('watchlistBody');
+            const apiKey = localStorage.getItem('alphaVantageApiKey');
+            
+            if (!apiKey) {
+                watchlistBody.innerHTML = `
+                    <tr>
+                        <td colspan="12" class="loading">
+                            Please enter your Alpha Vantage API key to load data.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Show loading state
+            watchlistBody.innerHTML = `
+                <tr>
+                    <td colspan="12" class="loading">Loading watchlist data...</td>
+                </tr>
+            `;
+            
+            // Create Alpha Vantage service
+            const alphaVantage = new AlphaVantageService(apiKey);
+            
+            // Get symbols from config
+            const symbols = config.defaultSymbols;
+            
+            // Create rows for each symbol
+            const rows = [];
+            for (const symbolData of symbols) {
+                const symbol = symbolData.symbol;
+                
+                // Create a placeholder row
+                const row = createWatchlistRow(symbol, null, null, null, null, null, null, null, null, null, null, null, null);
+                rows.push(row);
+                
+                // Fetch data asynchronously
+                (async () => {
+                    try {
+                        // Get quote data
+                        const quoteData = await alphaVantage.getQuote(symbol);
+                        
+                        // Get company overview
+                        const companyData = await alphaVantage.getCompanyOverview(symbol);
+                        
+                        // Update the row with real data
+                        if (!quoteData.error) {
+                            row.children[1].textContent = `$${formatNumber(quoteData.price)}`;
+                            
+                            // Add bid and ask if available
+                            if (quoteData.bid) {
+                                row.children[2].textContent = `$${formatNumber(quoteData.bid)}`;
+                            }
+                            if (quoteData.ask) {
+                                row.children[3].textContent = `$${formatNumber(quoteData.ask)}`;
+                            }
+                            
+                            const changeText = `${quoteData.change >= 0 ? '+' : ''}${formatNumber(quoteData.change)} (${quoteData.changePercent >= 0 ? '+' : ''}${formatNumber(quoteData.changePercent)}%)`;
+                            row.children[4].textContent = changeText;
+                            row.children[4].className = quoteData.change >= 0 ? 'change positive' : 'change negative';
+                            
+                            // Add 52-week high and low if available
+                            if (quoteData.weekHigh52) {
+                                row.children[5].textContent = `$${formatNumber(quoteData.weekHigh52)}`;
+                            }
+                            if (quoteData.weekLow52) {
+                                row.children[6].textContent = `$${formatNumber(quoteData.weekLow52)}`;
+                            }
+                            
+                            // Add market cap if available
+                            if (quoteData.marketCap) {
+                                row.children[7].textContent = formatLargeNumber(quoteData.marketCap);
+                            }
+                            
+                            // Add P/E ratio if available
+                            if (quoteData.peRatio) {
+                                row.children[8].textContent = formatNumber(quoteData.peRatio);
+                            }
+                            
+                            // Add ex dividend date if available
+                            if (quoteData.exDividendDate) {
+                                row.children[9].textContent = quoteData.exDividendDate;
+                            }
+                            
+                            row.children[10].textContent = formatLargeNumber(quoteData.volume);
+                            
+                            if (quoteData.sector) {
+                                row.children[11].textContent = quoteData.sector;
+                            }
+                        } else {
+                            row.children[1].textContent = 'Error';
+                            row.children[2].textContent = 'Error';
+                            row.children[3].textContent = 'Error';
+                            row.children[4].textContent = 'Error';
+                            row.children[5].textContent = 'Error';
+                            row.children[6].textContent = 'Error';
+                            row.children[7].textContent = 'Error';
+                            row.children[8].textContent = 'Error';
+                            row.children[9].textContent = 'Error';
+                            row.children[10].textContent = 'Error';
+                            row.children[11].textContent = 'Error';
+                            row.children[12].textContent = 'Error';
+                        }
+                        
+                        if (!companyData.error) {
+                            row.children[12].textContent = companyData.sector || 'N/A';
+                        } else {
+                            row.children[12].textContent = 'Error';
+                        }
+                    } catch (error) {
+                        console.error(`Error updating data for ${symbol}:`, error);
+                        row.children[1].textContent = 'Error';
+                        row.children[2].textContent = 'Error';
+                        row.children[3].textContent = 'Error';
+                        row.children[4].textContent = 'Error';
+                        row.children[5].textContent = 'Error';
+                        row.children[6].textContent = 'Error';
+                        row.children[7].textContent = 'Error';
+                        row.children[8].textContent = 'Error';
+                        row.children[9].textContent = 'Error';
+                        row.children[10].textContent = 'Error';
+                        row.children[11].textContent = 'Error';
+                        row.children[12].textContent = 'Error';
+                    }
+                })();
+            }
+            
+            // Clear the table and add the rows
+            watchlistBody.innerHTML = '';
+            rows.forEach(row => watchlistBody.appendChild(row));
+        }
+        
+        // Function to save API key
+        function saveApiKey() {
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const apiKey = apiKeyInput.value.trim();
+            
+            if (apiKey) {
+                localStorage.setItem('alphaVantageApiKey', apiKey);
+                showStatus('API key saved successfully');
+                
+                // Update the watchlist with the new API key
+                updateWatchlist();
+                
+                // Hide the API key form
+                document.getElementById('apiKeyForm').style.display = 'none';
+            } else {
+                showStatus('Please enter a valid API key', true);
+            }
+        }
+        
+        // Initialize the watchlist
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if API key is already saved
+            const apiKey = localStorage.getItem('alphaVantageApiKey');
+            if (apiKey) {
+                document.getElementById('apiKeyForm').style.display = 'none';
+                updateWatchlist();
+            }
+            
+            // Set up refresh button
+            document.getElementById('refreshButton').addEventListener('click', () => {
+                updateWatchlist();
+                showStatus('Refreshing data...');
+            });
+            
+            // Set up API key form
+            document.getElementById('saveApiKeyButton').addEventListener('click', saveApiKey);
+            
+            // Allow pressing Enter to save API key
+            document.getElementById('apiKeyInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveApiKey();
+                }
+            });
+        });
+
+        console.log('[Watchlist] Setup complete');
+    </script>
+</body>
+</html> 
