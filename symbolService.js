@@ -1,5 +1,13 @@
 // symbolService.js
 // Service for resolving stock symbols to their full TradingView format
+/*
+This script is used to resolve stock symbols to their full TradingView format
+It uses TradingView's symbol search API to find the correct exchange
+Falls back to "NASDAQ:TICKER" if the lookup fails
+Provides methods for cache management (get, save, clear)
+The main function is resolveSymbol() which takes a raw ticker symbol and returns a promise that resolves to the full exchange-qualified symbol format required by TradingView.
+The service is designed to work in both browser environments (exposed as window.SymbolService) and Node.js (exposed via module.exports).
+*/
 
 class SymbolService {
     constructor() {

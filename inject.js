@@ -1,4 +1,14 @@
-// inject.js
+/*
+This script is used to inject the TradingView symbol loader into the page
+
+This script is designed to be injected into TradingView webpages to enable remote control of charts. It:
+Searches for a TradingView chart object in the current window and frames
+Sets up a listener for postMessage events containing symbol information
+When a symbol message is received, it:
+Fetches proper symbol data from TradingView's API
+Changes the displayed chart to show the requested symbol
+*/
+
 console.log('[TV Remote] Script loaded on:', window.location.href);
 
 if (!window.__TV_REMOTE) {
