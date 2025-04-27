@@ -44,26 +44,44 @@ if (!window.__TV_REMOTE) {
     });
   }
 
+  async function fetchSymbolData(symbol) {
+    try {
+      console.log('[TV Remote] Fetching symbol data for:', symbol);
+      const response = await fetch(`https://symbol-search.tradingview.com/symbol_search/?text=${encodeURIComponent(symbol)}&exchange=&type=&domain=production`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('[TV Remote] Symbol data received:', data);
+      return data;
+    } catch (error) {
+      console.error('[TV Remote] Error fetching symbol data:', error);
+      return null;
+    }
+  }
+
   (async () => {
     console.log('[TV Remote] Starting initialization...');
     const chart = await waitForChart();
     console.log('[TV Remote] Chart found:', chart);
 
     // Listen for postMessage events
-    window.addEventListener('message', event => {
-      // Only accept messages from trusted origins
-      if (event.origin !== 'http://localhost:3000') {
-        console.log('[TV Remote] Ignoring message from untrusted origin:', event.origin);
-        return;
-      }
-      
+    window.addEventListener('message', async event => {
       console.log('[TV Remote] Received message:', event.data);
       
       const { symbol } = event.data || {};
       if (typeof symbol === 'string' && symbol) {
         try {
-          console.log('[TV Remote] Attempting to set symbol:', symbol);
-          const result = chart.setSymbol(symbol, null, true);
+          // First try to fetch the symbol data
+          const symbolData = await fetchSymbolData(symbol);
+          
+          // Use the fetched data if available, otherwise fall back to basic symbol
+          const symbolToUse = symbolData && symbolData[0] ? 
+            `${symbolData[0].exchange}:${symbolData[0].symbol}` : 
+            symbol;
+            
+          console.log('[TV Remote] Setting symbol:', symbolToUse);
+          const result = chart.setSymbol(symbolToUse, null, true);
           console.log('[TV Remote] setSymbol result:', result);
         } catch (err) {
           console.error('[TV Remote] setSymbol failed:', err);

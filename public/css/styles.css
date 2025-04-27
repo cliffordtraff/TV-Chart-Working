@@ -1,0 +1,286 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f5f5f5;
+}
+.watchlist {
+    width: 100%;
+    margin: 0;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+.watchlist-header {
+    padding: 20px;
+    background: #2962ff;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.watchlist-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+.refresh-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s;
+}
+.refresh-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+.watchlist-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+.watchlist-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 23px;
+    font-weight: 575;
+    border: 2px solid #222;
+    font-family: Verdana, Geneva, sans-serif;
+    table-layout: auto;
+}
+.watchlist-table th,
+.watchlist-table td {
+    padding: 4px 4px;
+    width: auto;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: 24px;
+    line-height: 24px;
+    /* Borders */
+    border-bottom: 1px solid #222 !important;
+    border-right: 1px solid #555;
+    text-align: right; /* Default to right alignment for all cells */
+    letter-spacing: -0.1px; /* Very subtle compression for data cells */
+}
+.watchlist-table th {
+    background: #f8f9fa;
+    font-weight: normal;
+    color: #333;
+    border-bottom: 2px solid #222 !important;
+    letter-spacing: -0.8px; /* Tighter letter spacing for headers */
+}
+.watchlist-table tr:hover {
+    background-color: transparent;
+    cursor: default;
+}
+.watchlist-table tbody tr:first-child td {
+    border-top: 2px solid #000;
+}
+.symbol, td.news {
+    white-space: nowrap;
+}
+.name {
+    color: #333;
+    font-size: 20px;
+    font-weight: normal;
+    max-width: 150px;
+}
+.price {
+    font-weight: 575;
+    color: #333;
+    font-size: 21px;
+}
+.change {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 21px;
+    text-align: right;
+    font-weight: 575;
+}
+.positive {
+    color: #008f3b;
+    background: transparent;
+}
+.negative {
+    color: #d60000;
+    background: transparent;
+}
+.volume {
+    color: #333;
+    font-size: 21px;
+    font-weight: 575;
+}
+.sector {
+    color: #333;
+    font-size: 21px;
+    font-weight: 575;
+}
+.status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 15px;
+    border-radius: 4px;
+    background: #f0f0f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 14px;
+    display: none;
+    z-index: 1000;
+}
+.status.success {
+    background: #e8f5e9;
+    color: #00c853;
+}
+.status.error {
+    background: #ffebee;
+    color: #ff1744;
+}
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+.error-message {
+    color: #ff1744;
+    font-size: 0.9em;
+    margin-top: 4px;
+}
+.api-key-form {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+.api-key-form input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 300px;
+    margin-right: 10px;
+}
+.api-key-form button {
+    padding: 8px 16px;
+    background: #2962ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.api-key-form button:hover {
+    background: #1e4bd8;
+}
+.news {
+    text-align: center;
+    cursor: pointer;
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+}
+.news a {
+    text-decoration: none;
+    color: #2962ff;
+    font-size: 1.2em;
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+    width: 30px;
+}
+.news a:hover {
+    color: #1e4bd8;
+}
+
+/* Left align for first column (Symbol) */
+.watchlist-table th:first-child,
+.watchlist-table td:first-child {
+    text-align: left;
+}
+
+/* Left align for last column (Name) */
+.watchlist-table th:last-child,
+.watchlist-table td:last-child {
+    text-align: left;
+}
+
+/* News column needs center alignment */
+th.news, td.news {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    text-align: center !important; /* News column stays centered */
+}
+
+.symbol {
+    font-weight: 575;
+    color: #0047AB;
+    font-size: 21px;
+    position: relative;
+    white-space: nowrap;
+}
+
+.symbol a {
+    cursor: pointer;
+}
+
+.symbol a:hover {
+    text-decoration: none !important;
+}
+
+/* Add dollar sign before symbol */
+.symbol::before {
+    content: "$";
+    display: inline;
+    margin-right: 2px;
+}
+
+/* Special handling for Last Trade column to ensure it fits */
+.watchlist-table th:nth-child(3),
+.watchlist-table td:nth-child(3) {
+    min-width: 110px;
+    width: 110px;
+    letter-spacing: -1px; /* Extra tight spacing for Last Trade */
+}
+
+/* Special handling for narrower columns */
+.watchlist-table th:nth-child(5),
+.watchlist-table td:nth-child(5) {
+    width: 75px;
+    min-width: 75px;
+    max-width: 75px;
+}
+
+/* Make the EPS column narrower */
+.watchlist-table th:nth-child(16),
+.watchlist-table td:nth-child(16) {
+    width: 80px;
+    min-width: 80px;
+    max-width: 80px;
+}
+
+/* Make the Div Yield column narrower */
+.watchlist-table th:nth-child(17),
+.watchlist-table td:nth-child(17) {
+    width: 80px;
+    min-width: 80px;
+    max-width: 80px;
+}
+
+/* Make the P/E column narrower */
+.watchlist-table th:nth-child(14),
+.watchlist-table td:nth-child(14) {
+    width: 80px;
+    min-width: 80px;
+    max-width: 80px;
+}
+
+/* Make the M. Cap column narrower */
+.watchlist-table th:nth-child(13),
+.watchlist-table td:nth-child(13) {
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+} 

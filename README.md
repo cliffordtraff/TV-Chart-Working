@@ -1,82 +1,99 @@
-# TradingView Remote-Control Integration
+# TradingView Symbol Search Proxy
 
-A seamless, in-place symbol swap experience for TradingView charts driven by an external watchlist web application. Instead of loading a new URL (which reloads the entire page and triggers a "Leave site?" prompt), this system dynamically updates the symbol displayed in an already-loaded TradingView chart, preserving all user customizations such as indicators, drawings, and timeframes.
+A server-side proxy for TradingView's symbol search API that enables seamless symbol resolution in external applications.
+
+## Overview
+
+This project provides a proxy server that allows external applications to access TradingView's symbol search functionality without running into CORS issues or other restrictions. It's designed to work with the TradingView Remote-Control Integration project, enabling users to click on ticker symbols in a watchlist and have them instantly load in a TradingView chart.
 
 ## Features
 
-- **Instant Symbol Updates**: Clicking a ticker in the watchlist swaps the chart symbol in under 20ms
-- **No Full-Page Reload**: Avoids changing `window.location` or reloading the URL entirely
-- **Bypass Browser Prompts**: Eliminates Chrome's `beforeunload` dialog ("Leave site? Changes you made may not be saved.")
-- **Cross-Origin Communication**: Uses `postMessage` API for secure communication between windows
+- **Server-side Proxy**: Bypasses CORS restrictions by proxying requests to TradingView's API
+- **Caching**: Implements both server-side and client-side caching for improved performance
+- **Error Handling**: Robust error handling with fallbacks for when the API is unavailable
+- **Support for Multiple Asset Types**: Works with stocks, ETFs, futures, indices, and crypto
 
-## Project Structure
+## Installation
+
+1. Clone this repository
+2. Install dependencies:
+   ```
+   npm install
+   ```
+3. Start the server:
+   ```
+   npm start
+   ```
+
+## Usage
+
+### API Endpoint
+
+The proxy exposes a single endpoint:
 
 ```
-project/
-├── inject.py        # mitmproxy hook: strip CSP + inject inject.js into all TradingView HTML
-├── inject.js        # Injected into TradingView frames: finds the chart instance & listens for postMessage events
-├── watchlist.html   # Watchlist UI: renders ticker buttons, opens TV window, and sends postMessage(symbol) on click
-└── server.js        # Simple Express server to serve the watchlist
+GET /api/symbol-search?text=SYMBOL
 ```
 
-## Setup Instructions
-
-### 1. Install Dependencies
-
-```bash
-# Install mitmproxy
-brew install mitmproxy  # macOS
-# or
-pip install mitmproxy  # Python
-
-# Install Node.js dependencies
-npm install
+Example:
+```
+GET /api/symbol-search?text=AAPL
 ```
 
-### 2. Configure mitmproxy
-
-1. Trust mitmproxy's CA:
-   - Visit `http://mitm.it`
-   - Download and install the certificate for your OS
-   - For macOS: Add to Keychain and set to "Always Trust"
-
-2. Configure your system proxy:
-   - Set HTTP and HTTPS proxies to `127.0.0.1:8080`
-
-### 3. Start the Services
-
-```bash
-# Start mitmproxy with the injection script
-mitmproxy -s inject.py --listen-port 8080
-
-# In another terminal, start the watchlist server
-node server.js
+Response:
+```json
+[
+  {
+    "symbol": "AAPL",
+    "exchange": "NASDAQ",
+    "description": "Apple Inc.",
+    "type": "stock",
+    "provider_id": "NASDAQ:AAPL"
+  }
+]
 ```
 
-### 4. Use the Watchlist
+### Integration with Watchlist
 
-1. Open `http://localhost:3000` in your browser
-2. Click on any symbol in the watchlist
-3. The TradingView chart will open (if not already open) and update to the selected symbol
+The `SymbolService` class in `public/symbolService.js` provides a simple interface for resolving symbols:
 
-## How It Works
+```javascript
+const symbolService = new SymbolService();
+const fullSymbol = await symbolService.resolveSymbol('AAPL');
+console.log(fullSymbol); // "NASDAQ:AAPL"
+```
 
-1. **mitmproxy** intercepts HTML responses from TradingView and injects our `inject.js` script
-2. **inject.js** runs in the TradingView context, finds the chart instance, and listens for postMessage events
-3. **watchlist.html** provides a UI for selecting symbols and sends them to TradingView via postMessage
-4. When a symbol is clicked, the chart updates instantly without reloading
+### Testing
 
-## Technical Details
+To test the proxy implementation:
 
-- Uses the `postMessage` API for cross-origin communication
-- Leverages TradingView's internal `chart.setSymbol()` method
-- Bypasses Content Security Policy (CSP) restrictions via mitmproxy
-- Preserves all chart customizations during symbol swaps
+```
+node test-proxy.js
+```
+
+This will test the proxy with various symbol types and report the results.
+
+## Architecture
+
+The solution consists of three main components:
+
+1. **Express Server**: Handles proxy requests and implements server-side caching
+2. **SymbolService**: Client-side service for resolving symbols with local caching
+3. **Watchlist UI**: User interface for displaying and interacting with symbols
+
+## Error Handling
+
+The implementation includes several layers of error handling:
+
+1. **Server-side**: Catches and logs errors from TradingView's API
+2. **Client-side**: Falls back to a default exchange (NASDAQ) if the proxy fails
+3. **Caching**: Reduces dependency on the API by caching results
 
 ## License
 
-This project is for personal use only. Do not redistribute or use for commercial purposes.
+This project is for personal use only. Do not distribute or use for commercial purposes.
 
-## Disclaimer
+## Acknowledgments
 
-This is a personal-use tool and not affiliated with or endorsed by TradingView. Use at your own risk. 
+- TradingView for providing the symbol search API
+- The mitmproxy project for inspiration on proxy implementations 
