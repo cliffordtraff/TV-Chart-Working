@@ -8,7 +8,7 @@ const config = {
   // Default symbols to display in the watchlist
   defaultSymbols: [
     { symbol: 'SPY' },
-    { symbol: 'DJI' },
+    { symbol: 'DIA' },
     { symbol: 'AAPL' },
     { symbol: 'MSFT' },
     { symbol: 'GOOGL' },

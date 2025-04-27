@@ -66,6 +66,9 @@
         // Initialize services
         const symbolService = new SymbolService();
         
+        // Track the currently highlighted row
+        let currentHighlightedRow = null;
+        
         // Function to show status messages
         function showStatus(message, isError = false) {
             const statusEl = document.getElementById('status');
@@ -81,32 +84,49 @@
         let tvWindow = null;
         let pendingSymbol = null;
         
+        /**
+         * Opens (or reuses) the TradingView window.
+         * Returns an object: { win, isNew }
+         *   win   – window reference
+         *   isNew – true if we just opened the window in this call
+         */
         function openTradingView() {
+            let isNew = false;
             if (!tvWindow || tvWindow.closed) {
                 tvWindow = window.open('https://www.tradingview.com/chart/', 'tvChartWindow');
                 console.log('[Watchlist] Opened TradingView window');
+                isNew = true;
             }
-            return tvWindow;
+            return { win: tvWindow, isNew };
         }
         
-        // Function to send a symbol to TradingView
-        async function sendSymbol(rawSymbol) {
+        // Send the symbol to TradingView, ensuring the page is fully loaded first
+        function sendSymbol(rawSymbol) {
             console.log('[Watchlist] Processing symbol:', rawSymbol);
             
-            // Make sure we have a reference to the TradingView window
-            const tvWin = openTradingView();
+            const { win: tvWin, isNew } = openTradingView();
             if (!tvWin) {
                 showStatus('Could not open TradingView window', true);
                 return;
             }
             
-            // Send the symbol to TradingView
-            console.log('[Watchlist] Sending to TradingView:', rawSymbol);
-            tvWin.postMessage({ 
-                symbol: rawSymbol 
-            }, '*');
-            
-            showStatus(`Symbol ${rawSymbol} sent to TradingView`);
+            if (isNew) {
+                // Window is still loading – defer sending the symbol
+                pendingSymbol = rawSymbol;
+                tvWin.onload = () => {
+                    if (pendingSymbol) {
+                        console.log('[Watchlist] TradingView loaded, sending pending symbol:', pendingSymbol);
+                        tvWin.postMessage({ symbol: pendingSymbol }, '*');
+                        showStatus(`Symbol ${pendingSymbol} sent to TradingView`);
+                        pendingSymbol = null;
+                    }
+                };
+            } else {
+                // Window already loaded, send immediately
+                console.log('[Watchlist] Sending to TradingView:', rawSymbol);
+                tvWin.postMessage({ symbol: rawSymbol }, '*');
+                showStatus(`Symbol ${rawSymbol} sent to TradingView`);
+            }
         }
         
         // Function to format dates as MM/DD/YY
@@ -162,17 +182,35 @@
             // Symbol cell
             const symbolCell = document.createElement('td');
             symbolCell.className = 'symbol';
+            symbolCell.style.cursor = 'pointer'; // Show clickable cursor for entire cell
             // Make symbol look and act like a link
             const symbolLink = document.createElement('a');
             symbolLink.href = '#';
             symbolLink.textContent = symbol.includes(':') ? symbol.split(':')[1] : symbol;
             symbolLink.style.textDecoration = 'none';
             symbolLink.style.color = 'inherit';
-            symbolLink.addEventListener('click', (e) => {
+            
+            // Click handler function for both the link and the cell
+            const handleSymbolClick = (e) => {
                 e.preventDefault();
                 const baseSymbol = symbol.includes(':') ? symbol.split(':')[1] : symbol;
+                
+                // Remove highlight from previously highlighted row
+                if (currentHighlightedRow && currentHighlightedRow !== row) {
+                    currentHighlightedRow.classList.remove('row-highlight');
+                }
+                
+                // Highlight the current row and update the reference
+                row.classList.add('row-highlight');
+                currentHighlightedRow = row;
+                
                 sendSymbol(baseSymbol);
-            });
+            };
+            
+            // Add click event to both the link and the entire cell
+            symbolLink.addEventListener('click', handleSymbolClick);
+            symbolCell.addEventListener('click', handleSymbolClick);
+            
             symbolCell.appendChild(symbolLink);
             row.appendChild(symbolCell);
             
