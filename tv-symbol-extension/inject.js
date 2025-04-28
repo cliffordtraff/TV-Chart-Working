@@ -93,6 +93,15 @@ if (!window.__TV_SYMBOL_LOADER) {
       }
     });
 
+    // Handshake: notify opener that chart is ready to receive symbols
+    if (window.opener) {
+      console.log('[TV Symbol Loader] Chart-ready handshake sent to opener');
+      window.opener.postMessage({
+        source: 'tv-symbol-loader-extension',
+        type: 'chart-ready'
+      }, '*');
+    }
+
     console.log('[TV Symbol Loader] Setup complete - listening for postMessage events');
   })();
 } 

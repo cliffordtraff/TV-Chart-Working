@@ -57,14 +57,21 @@ function sendSymbol(rawSymbol) {
     if (isNew) {
         // Window is still loading – defer sending the symbol
         pendingSymbol = rawSymbol
-        tvWin.onload = () => {
-            if (pendingSymbol) {
-                console.log('[Watchlist] TradingView loaded, sending pending symbol:', pendingSymbol)
+        // First-load handshake: wait for chart-ready event from inject.js
+        window.addEventListener('message', function onChartReady(event) {
+            if (
+                event.source === tvWin &&
+                event.data &&
+                event.data.source === 'tv-symbol-loader-extension' &&
+                event.data.type === 'chart-ready'
+            ) {
+                console.log('[Watchlist] Received chart-ready handshake, sending symbol:', pendingSymbol)
                 tvWin.postMessage({ symbol: pendingSymbol }, '*')
                 showStatus(`Symbol ${pendingSymbol} sent to TradingView`)
                 pendingSymbol = null
+                window.removeEventListener('message', onChartReady)
             }
-        }
+        })
     } else {
         // Window already loaded, send immediately
         console.log('[Watchlist] Sending to TradingView:', rawSymbol)
