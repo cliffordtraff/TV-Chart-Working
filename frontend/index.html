@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradingView Watchlist</title>
+</head>
+<body>
+    <div class="watchlist">
+        <div class="watchlist-header">
+            <h1>Watchlist</h1>
+            <button id="refreshButton" class="refresh-button">Refresh Data</button>
+        </div>
+        
+        <div id="apiKeyForm" class="api-key-form">
+            <h3>Alpha Vantage API Key</h3>
+            <p>Enter your Alpha Vantage API key to fetch real-time data:</p>
+            <input type="text" id="apiKeyInput" placeholder="Enter your API key">
+            <button id="saveApiKeyButton">Save API Key</button>
+        </div>
+        
+        <div id="watchlistContainer">
+            <div class="watchlist-table-wrapper">
+                <table class="watchlist-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th class="news">News</th>
+                            <th>Last Trade</th>
+                            <th>Change</th>
+                            <th>%</th>
+                            <th>Bid</th>
+                            <th>Ask</th>
+                            <th>Bid Size</th>
+                            <th>Ask Size</th>
+                            <th>Volume</th>
+                            <th>Low</th>
+                            <th>High</th>
+                            <th>M. Cap</th>
+                            <th>P/E (ttm)</th>
+                            <th>Ex-Date</th>
+                            <th>EPS (ttm)</th>
+                            <th>Div Yield</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody id="watchlistBody">
+                        <tr>
+                            <td colspan="18" class="loading">Loading watchlist data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="status" class="status"></div>
+
+    <!-- Main Script -->
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html> 

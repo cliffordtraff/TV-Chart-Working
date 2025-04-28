@@ -1,7 +1,7 @@
 // symbolService.js
 // Service for resolving stock symbols to their full TradingView format
 
-class SymbolService {
+export class SymbolService {
     constructor() {
         // Initialize cache from localStorage or empty object
         this.symbolCache = JSON.parse(localStorage.getItem('symbolCache') || '{}');

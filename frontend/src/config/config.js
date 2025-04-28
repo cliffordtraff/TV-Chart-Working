@@ -1,12 +1,14 @@
 // config.js
 // Alpha Vantage API configuration
 
-const config = {
+export const config = {
   // Replace with your Alpha Vantage API key
   alphaVantageApiKey: 'FKLI05WDQRW39EKR',
   
   // Default symbols to display in the watchlist
   defaultSymbols: [
+    { symbol: 'SPY' },
+    { symbol: 'DIA' },
     { symbol: 'AAPL' },
     { symbol: 'MSFT' },
     { symbol: 'GOOGL' },
@@ -28,14 +30,9 @@ const config = {
     { symbol: 'PG' },
     { symbol: 'KO' },
     { symbol: 'USD' },
-    { symbol: 'USD/JPY' }
+    { symbol: 'USDJPY' }
   ],
   
   // Refresh interval in milliseconds (5 minutes)
   refreshInterval: 5 * 60 * 1000
-};
-
-// Export the configuration
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = config;
-} 
+}; 

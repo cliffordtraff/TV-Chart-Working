@@ -200,88 +200,96 @@ body {
     text-align: left;
 }
 
-/* Left align for last column (Name) */
+/* Right align for last column */
 .watchlist-table th:last-child,
 .watchlist-table td:last-child {
-    text-align: left;
+    text-align: right;
 }
 
-/* News column needs center alignment */
+/* Center align for News column */
 th.news, td.news {
-    width: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
-    padding-left: 8px !important;
-    padding-right: 8px !important;
-    text-align: center !important; /* News column stays centered */
+    text-align: center !important;
 }
 
+/* Symbol column styles */
 .symbol {
     font-weight: 575;
-    color: #0047AB;
+    color: #333;
     font-size: 25px;
-    position: relative;
-    white-space: nowrap;
-    cursor: pointer;
+    text-align: left;
+    min-width: 120px;
 }
 
 .symbol a {
-    cursor: pointer;
+    text-decoration: none;
+        color: #2962ff;
 }
 
 .symbol a:hover {
-    text-decoration: none !important;
+    color: #1e4bd8;
 }
 
-/* Special handling for Last Trade column to ensure it fits */
+/* Right align specific columns */
 .watchlist-table th:nth-child(3),
-.watchlist-table td:nth-child(3) {
-    min-width: 110px;
-    width: 110px;
-    letter-spacing: -1px; /* Extra tight spacing for Last Trade */
+.watchlist-table td:nth-child(3),
+.watchlist-table th:nth-child(4),
+.watchlist-table td:nth-child(4) {
+    text-align: right;
 }
 
-/* Special handling for narrower columns */
 .watchlist-table th:nth-child(5),
-.watchlist-table td:nth-child(5) {
-    width: 75px;
-    min-width: 75px;
-    max-width: 75px;
+.watchlist-table td:nth-child(5),
+.watchlist-table th:nth-child(6),
+.watchlist-table td:nth-child(6) {
+    text-align: right;
 }
 
-/* Make the EPS column narrower */
 .watchlist-table th:nth-child(16),
-.watchlist-table td:nth-child(16) {
-    width: 80px;
-    min-width: 80px;
-    max-width: 80px;
+.watchlist-table td:nth-child(16),
+.watchlist-table th:nth-child(15),
+.watchlist-table td:nth-child(15) {
+    text-align: right;
 }
 
-/* Make the Div Yield column narrower */
 .watchlist-table th:nth-child(17),
-.watchlist-table td:nth-child(17) {
-    width: 80px;
-    min-width: 80px;
-    max-width: 80px;
+.watchlist-table td:nth-child(17),
+.watchlist-table th:nth-child(18),
+.watchlist-table td:nth-child(18) {
+    text-align: right;
 }
 
-/* Make the P/E column narrower */
 .watchlist-table th:nth-child(14),
-.watchlist-table td:nth-child(14) {
-    width: 80px;
-    min-width: 80px;
-    max-width: 80px;
-}
-
-/* Make the M. Cap column narrower */
+.watchlist-table td:nth-child(14),
 .watchlist-table th:nth-child(13),
 .watchlist-table td:nth-child(13) {
-    width: 120px;
-    min-width: 120px;
-    max-width: 120px;
+    text-align: right;
 }
 
-/* Highlight row when symbol is clicked */
+.watchlist-table th:nth-child(13),
+.watchlist-table td:nth-child(13),
+.watchlist-table th:nth-child(12),
+.watchlist-table td:nth-child(12) {
+    text-align: right;
+}
+
+/* Make row highlight more prominent */
 .row-highlight {
-    background-color: #ffeb3b !important; /* Bright yellow */
+    background-color: #fff8e1 !important; /* Light yellow background */
+}
+
+.watchlist-table tr.row-highlight:hover {
+    background-color: #fff8e1 !important;
+}
+
+/* Make symbol links more prominent */
+.watchlist-table td.symbol a {
+    text-decoration: none;
+    color: #0D47A1 !important; /* Much darker blue */
+    cursor: pointer;
+    font-weight: 575;
+}
+
+.watchlist-table td.symbol a:hover {
+    color: #1A237E !important; /* Navy blue on hover */
+    text-decoration: underline;
 } 
